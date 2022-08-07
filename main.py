@@ -1,8 +1,9 @@
 #!/opt/bin/python3
  
-__author__ = "Yann LEROUX"
-__version__ = "1.0.2"
-__email__ = "yleroux@gmail.com"
+__author__ = "Nervalo88" #initially Yann LEROUX - https://github.com/BreizhCat/domoticz-tuya
+# Patched due to latest tuya API change
+# Added support for shutters
+__version__ = "0.0.1"
 
 import requests
 import hmac
@@ -16,14 +17,15 @@ class tuya_api:
         self._isLogged  = False
         self._encode   = 'HMAC-SHA256'
 
-        self.debug     = False
+        self.debug     = True
         self.url_api   = "https://openapi.tuyaeu.com"
-        self.full_path = "/usr/local/domoticz/var/scripts/domo-tuya/"
+        self.full_path = ""#"/usr/local/domoticz/var/scripts/domo-tuya/"
 
         with open(self.full_path + 'code.json') as param_data:
             data = json.load(param_data)
             self.client_id = data['client_id']
             self.secret    = data['app_id']
+            self.devices   = data['devices']
 
     def _debug(self, text):
         if self.debug:
@@ -68,11 +70,11 @@ class tuya_api:
         else:
             print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
     
-    def switch(self, id, value):
+    def switchLed(self, id, value):
         if not self._isLogged:
             return
 
-        self._debug("Switch...")
+        self._debug("Switch a LED...")
         self._getSignature(True)
         
         header = {
@@ -84,7 +86,35 @@ class tuya_api:
             'Content-Type' :'application/json'
         }
         
-        data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"switch_1\",\n\t\t\t\"value\":'+value+'\n\t\t}\n\t]\n}' 
+        data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"switch_led\",\n\t\t\t\"value\":'+value+'\n\t\t}\n\t]\n}' 
+        
+        res = requests.post(self.url_api + '/v1.0/devices/' + id + '/commands', headers=header, data = data)
+        if res.ok:
+            result = json.loads(res.content)
+            if result['success']:
+                self._debug('Device ' + id + 'status set to ' + value)
+            else:
+                print('Execution Error: ' + result['msg'])   
+        else:
+            print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
+
+    def moveShutter(self, id, value):
+        if not self._isLogged:
+            return
+
+        self._debug("move a shutter...")
+        self._getSignature(True)
+        
+        header = {
+            'client_id'    : self.client_id,
+            'access_token' : self.token,
+            'sign'         : self.signature,
+            't'            : str(self.timestamp),
+            'sign_method'  : self._encode,
+            'Content-Type' :'application/json'
+        }
+        
+        data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"control\",\n\t\t\t\"value\":'+value+'\n\t\t}\n\t]\n}' 
         
         res = requests.post(self.url_api + '/v1.0/devices/' + id + '/commands', headers=header, data = data)
         if res.ok:
@@ -115,6 +145,7 @@ class tuya_api:
 
         if res.ok: 
             result = json.loads(res.content)
+            self._debug(result)
             if result['success']:
                 return result['result'][0]['value']
             else:
@@ -136,7 +167,7 @@ def main():
         if sys.argv[1] == '--switch':
             tuya = tuya_api()
             tuya.login()
-            tuya.switch(sys.argv[2], sys.argv[3])
+            tuya.switchLed(sys.argv[2], sys.argv[3])
         elif sys.argv[1] == '--status':
             tuya = tuya_api()
             tuya.login()
@@ -145,9 +176,9 @@ def main():
             tuya = tuya_api()
             tuya.login()
             if tuya.getStatus(sys.argv[2]):
-                tuya.switch(sys.argv[2], "false")
+                tuya.switchLed(sys.argv[2], "false")
             else:
-                tuya.switch(sys.argv[2], "true")
+                tuya.switchLed(sys.argv[2], "true")
         else: 
             help()
 
