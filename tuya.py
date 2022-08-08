@@ -99,6 +99,7 @@ class tuya_api:
             print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
 
     def moveShutter(self, id, value):
+        ### Values open | close | stop  (added "" into the command)
         if not self._isLogged:
             return
 
@@ -114,7 +115,7 @@ class tuya_api:
             'Content-Type' :'application/json'
         }
         
-        data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"control\",\n\t\t\t\"value\":'+value+'\n\t\t}\n\t]\n}' 
+        data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"control\",\n\t\t\t\"value\":\"'+value+'\"\n\t\t}\n\t]\n}' 
         
         res = requests.post(self.url_api + '/v1.0/devices/' + id + '/commands', headers=header, data = data)
         if res.ok:
@@ -153,33 +154,46 @@ class tuya_api:
         else:
             print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
 
-def help():
-    print('Options available')
-    print('-----------------')
-    print('main.py --switch <ID> <True|False>')
-    print('main.py --status <ID>') 
-    print('main.py --toggle <ID>')  
+    def help(self):
+        print('Options available')
+        print('-----------------')
+        print('tuya.py --status <ID>')
+        print('tuya.py --switchLed <ID> <True|False>')
+        print('tuya.py --toggleLed <ID>\n')  
+        print("-----DEVICES-----")
+        for device in self.devices.keys():
+            print(device)
+        
 
-def main():
+if __name__ == '__main__':
+    tuya = tuya_api()
+
     if len(sys.argv) <= 1:
-        help()
+        print("not enough arguments")
+        tuya.help()
+        exit()
+        
     else:
-        if sys.argv[1] == '--switch':
-            tuya = tuya_api()
-            tuya.login()
-            tuya.switchLed(sys.argv[2], sys.argv[3])
-        elif sys.argv[1] == '--status':
-            tuya = tuya_api()
-            tuya.login()
-            print(tuya.getStatus(sys.argv[2]))
-        elif sys.argv[1] == '--toggle':
-            tuya = tuya_api()
-            tuya.login()
-            if tuya.getStatus(sys.argv[2]):
-                tuya.switchLed(sys.argv[2], "false")
-            else:
-                tuya.switchLed(sys.argv[2], "true")
-        else: 
-            help()
+        device = tuya.devices.get(sys.argv[2])
+        if device == None :
+            device = sys.argv[2]
+        print(device)
 
-main()
+        tuya.login()
+        if sys.argv[1] == '--status':
+            print(tuya.getStatus(device))
+
+        elif sys.argv[1] == '--switchLed':
+            tuya.switchLed(device, sys.argv[3])
+
+        elif sys.argv[1] == '--shutter':
+            tuya.moveShutter(device, sys.argv[3])
+
+        elif sys.argv[1] == '--toggleLed':
+            if tuya.getStatus(device):
+                tuya.switchLed(device, "false")
+            else:
+                tuya.switchLed(device, "true")
+        else: 
+            print("wrong argument")
+            tuya.help()
