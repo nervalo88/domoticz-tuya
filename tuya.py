@@ -21,6 +21,8 @@ class tuya_api:
         self.url_api   = "https://openapi.tuyaeu.com"
         self.full_path = ""#"/usr/local/domoticz/var/scripts/domo-tuya/"
 
+        
+
         with open(self.full_path + 'code.json') as param_data:
             data = json.load(param_data)
             self.client_id = data['client_id']
@@ -46,9 +48,13 @@ class tuya_api:
 
         self.signature = hmac.new(bytes(self.secret , 'latin-1'), msg = bytes(message, 'latin-1'), digestmod = hashlib.sha256).hexdigest().upper()
 
+    def setDevice(self,input):
+        self.id = self.devices.get(input)
+        if self.id == None :
+            self.id = input
+
     def login(self):
         self._debug('Login...')
-
         self._getSignature()           
         
         header = {
@@ -70,10 +76,13 @@ class tuya_api:
         else:
             print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
     
-    def switchLed(self, id, value):
+    def switchLed(self, value):
         if not self._isLogged:
+            self.login()
+        if self.id == None:
+            print("No device specified... Abort")
             return
-
+        #hopefully, this is a led...
         self._debug("Switch a LED...")
         self._getSignature(True)
         
@@ -88,20 +97,20 @@ class tuya_api:
         
         data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"switch_led\",\n\t\t\t\"value\":'+value+'\n\t\t}\n\t]\n}' 
         
-        res = requests.post(self.url_api + '/v1.0/devices/' + id + '/commands', headers=header, data = data)
+        res = requests.post(self.url_api + '/v1.0/devices/' + self.id + '/commands', headers=header, data = data)
         if res.ok:
             result = json.loads(res.content)
             if result['success']:
-                self._debug('Device ' + id + 'status set to ' + value)
+                self._debug('Device ' + self.id + 'status set to ' + value)
             else:
                 print('Execution Error: ' + result['msg'])   
         else:
             print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
 
-    def moveShutter(self, id, value):
+    def moveShutter(self, value):
         ### Values open | close | stop  (added "" into the command)
         if not self._isLogged:
-            return
+            self.login()
 
         self._debug("move a shutter...")
         self._getSignature(True)
@@ -117,19 +126,19 @@ class tuya_api:
         
         data = '{\n\t\"commands\":[\n\t\t{\n\t\t\t\"code\": \"control\",\n\t\t\t\"value\":\"'+value+'\"\n\t\t}\n\t]\n}' 
         
-        res = requests.post(self.url_api + '/v1.0/devices/' + id + '/commands', headers=header, data = data)
+        res = requests.post(self.url_api + '/v1.0/devices/' + self.id + '/commands', headers=header, data = data)
         if res.ok:
             result = json.loads(res.content)
             if result['success']:
-                self._debug('Device ' + id + 'status set to ' + value)
+                self._debug('Device ' + self.id + 'status set to ' + value)
             else:
                 print('Execution Error: ' + result['msg'])   
         else:
             print("HTTP %i - %s, Message %s" % (res.status_code, res.reason, res.text))
 
-    def getStatus(self, id):
+    def getStatus(self):
         if not self._isLogged:
-            return
+            self.login()
 
         self._debug("Get Statuts...")
         self._getSignature(True)        
@@ -142,7 +151,7 @@ class tuya_api:
             'sign_method'  : self._encode,
         }
 
-        res = requests.get(self.url_api + '/v1.0/devices/'+ id+ '/status', headers=header)
+        res = requests.get(self.url_api + '/v1.0/devices/'+ self.id+ '/status', headers=header)
 
         if res.ok: 
             result = json.loads(res.content)
@@ -174,26 +183,24 @@ if __name__ == '__main__':
         exit()
         
     else:
-        device = tuya.devices.get(sys.argv[2])
-        if device == None :
-            device = sys.argv[2]
-        print(device)
+        tuya.setDevice(sys.argv[2])
+        print(tuya.id)
 
         tuya.login()
         if sys.argv[1] == '--status':
-            print(tuya.getStatus(device))
+            print(tuya.getStatus())
 
         elif sys.argv[1] == '--switchLed':
-            tuya.switchLed(device, sys.argv[3])
+            tuya.switchLed( sys.argv[3])
 
         elif sys.argv[1] == '--shutter':
-            tuya.moveShutter(device, sys.argv[3])
+            tuya.moveShutter( sys.argv[3])
 
         elif sys.argv[1] == '--toggleLed':
-            if tuya.getStatus(device):
-                tuya.switchLed(device, "false")
+            if tuya.getStatus():
+                tuya.switchLed( "false")
             else:
-                tuya.switchLed(device, "true")
+                tuya.switchLed( "true")
         else: 
             print("wrong argument")
             tuya.help()

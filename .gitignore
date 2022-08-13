@@ -1,3 +1,5 @@
 code.json
 *.code-workspace
 .vscode/settings.json
+__pycache__/tuya.cpython-38.pyc
+__pycache__/tuya.cpython-39.pyc
