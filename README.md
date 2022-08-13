@@ -10,7 +10,14 @@
 - `tuya.py --toggleLed <ID>\n'` permuter l'etat d'une lampe
 - `tuya.py --shutter <ID> <open|close|stop>'` commander un volet roulant
 
-### TODO : Script python DZvent
+### Integration sous Domoticz
+
+Nous utiliserons le script `script_device_curtain.lua` pour interagir avec Domoticz, qui doit se trouver sous `/home/<user>/domoticz/scripts/lua`.
+```sh
+cd /home/<user>/domoticz/scripts/lua 
+git clone https://github.com/nervalo88/domoticz-tuya.git
+ln ./domoticz-tuya/script_device_curtain.lua script_device_curtain.lua 
+```
 
 ## Configuration
 1. Creer un compte sur https://iot.tuya.com
@@ -33,4 +40,4 @@ Fork depuis [BreizhCat/domoticz-tuya](https://github.com/BreizhCat/domoticz-tuya
 - remplacement des ID par des mot-cles depuis `code.json` fonctionnel
 - support de commandes de volets roulants 
 
-*impossible (dans mon cas) de faire fonctionner les projets de plus grande ampleur tels que `tuyaha` ou [Xenomes/Domoticz-TUYA-Plugin](https://github.com/Xenomes/Domoticz-TUYA-Plugin), problèmes rencontrès des l'authentification, ces projets ne semblent pas compatibles avec les volets roulants*
+*impossible (dans mon cas) de faire fonctionner les projets de plus grande ampleur tels que `tuyaha` ou [Xenomes/Domoticz-TUYA-Plugin](https://github.com/Xenomes/Domoticz-TUYA-Plugin), problèmes rencontrès des l'authentification, ces projets ne semblent pas compatibles avec les volets roulants (non testé)*
