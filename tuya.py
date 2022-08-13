@@ -13,21 +13,22 @@ from time import time
 import sys
 
 class tuya_api:
-    def __init__(self):
+    def __init__(self, deviceInput = None):
         self._isLogged  = False
         self._encode   = 'HMAC-SHA256'
 
-        self.debug     = True
+        self.debug     = False
         self.url_api   = "https://openapi.tuyaeu.com"
         self.full_path = ""#"/usr/local/domoticz/var/scripts/domo-tuya/"
-
-        
-
+      
         with open(self.full_path + 'code.json') as param_data:
             data = json.load(param_data)
             self.client_id = data['client_id']
             self.secret    = data['app_id']
             self.devices   = data['devices']
+
+        if deviceInput:
+            self.setDevice(deviceInput)
 
     def _debug(self, text):
         if self.debug:
