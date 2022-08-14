@@ -8,7 +8,13 @@
 - `tuya.py --shutter <ID> <open|close|stop>'` commander un volet roulant
 
 ### Integration sous Domoticz
-
+Nous utiliserons le script `script_device_curtain.lua` pour interagir avec Domoticz, qui doit se trouver sous `/home/<user>/domoticz/scripts/lua`. 
+```sh
+cd /home/<user>/domoticz/scripts/lua 
+git clone https://github.com/nervalo88/domoticz-tuya.git
+ln ./domoticz-tuya/script_device_curtain.lua script_device_curtain.lua 
+```
+Ajuster `devicechanged['XXX']` en fonction de votre configuration Domoticz
 
 
 ## Configuration
@@ -33,13 +39,3 @@ Fork depuis [BreizhCat/domoticz-tuya](https://github.com/BreizhCat/domoticz-tuya
 - support de commandes de volets roulants 
 
 *impossible (dans mon cas) de faire fonctionner les projets de plus grande ampleur tels que `tuyaha` ou [Xenomes/Domoticz-TUYA-Plugin](https://github.com/Xenomes/Domoticz-TUYA-Plugin), problèmes rencontrès des l'authentification, ces projets ne semblent pas compatibles avec les volets roulants (non testé)*
-
-# ARCHIVE
-### Integration sous Domoticz
-Nous envisagions d'utiliser le script `script_device_curtain.lua` pour interagir avec Domoticz, qui doit se trouver sous `/home/<user>/domoticz/scripts/lua`. 
-```sh
-cd /home/<user>/domoticz/scripts/lua 
-git clone https://github.com/nervalo88/domoticz-tuya.git
-ln ./domoticz-tuya/script_device_curtain.lua script_device_curtain.lua 
-```
-Pas necessaire, un *selecteur virtuel* sous Domoticz permet d'appeller diverses commandes

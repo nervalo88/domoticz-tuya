@@ -30,6 +30,11 @@ elif sys.argv[1] == 'stop':
     voletSalon.moveShutter("stop")
     voletSaM.moveShutter("stop")
     voletCuisine.moveShutter("stop")
+elif sys.argv[1] == 'light':
+    if sys.argv[2] == 'on':
+        light.switchLed('true')
+    elif sys.argv[2] == 'off':
+        light.switchLed('false')
 elif sys.argv[1] == 'sun':
     start_time = time.time()
     voletSalon.moveShutter("close")

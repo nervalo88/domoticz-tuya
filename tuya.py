@@ -19,7 +19,7 @@ class tuya_api:
 
         self.debug     = False
         self.url_api   = "https://openapi.tuyaeu.com"
-        self.full_path = ""#"/usr/local/domoticz/var/scripts/domo-tuya/"
+        self.full_path = "/home/pi/domoticz/scripts/lua/domoticz-tuya/"#"/usr/local/domoticz/var/scripts/domo-tuya/"
       
         with open(self.full_path + 'code.json') as param_data:
             data = json.load(param_data)

@@ -30,10 +30,43 @@
 --
 -- TBD: nice time example, for instance get temp from svalue string, if time is past 22.00 and before 00:00 and temp is bloody hot turn on fan. 
 
-print('Domoticz log : plopeeE')
 
 commandArray = {}
-if (devicechanged['MyDeviceName'] == 'On' and otherdevices['MyOtherDeviceName'] == 'Off') then
-	commandArray['MyOtherDeviceName']='On'
+if (devicechanged['CurtainSelector']) then
+	value = tonumber(otherdevices_svalues['CurtainSelector'])
+	if value == 10 then 
+		print('open shutters here') 
+		os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py open")
+	end
+	if value == 20 then 
+		print('close shutters here') 
+		os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py close")
+	end
+	if value == 30 then 
+		os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py stop")
+	end
+	if value == 40 then 
+		print('SUN mode :)')
+		os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py sun") 
+	end
 end
+
+if(devicechanged['0x84ba20fffeda722a action_on']) then
+	os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py open")
+end
+
+if(devicechanged['0x84ba20fffeda722a action_off']) then
+	os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py close")
+end
+
+if(devicechanged['0x84ba20fffeda722a action_brightness_move_up']) then
+	os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py stop")
+end
+
+if(devicechanged['0x84ba20fffeda722a action_brightness_move_down']) then
+	os.execute("/home/pi/domoticz/scripts/lua/domoticz-tuya/shutter.py sun")
+end
+
+
 return commandArray
+
